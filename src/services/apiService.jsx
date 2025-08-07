@@ -1,6 +1,6 @@
 class APIService {
     constructor() {
-      this.baseUrl = "http://104.251.216.164"
+      this.baseUrl = "http://104.251.216.164/api/"
     }
   
     async analyzeSymptoms(note) {
