@@ -8,11 +8,13 @@ const Chat = ({ onShowEmergency, onShowNotification }) => {
   const [messages, setMessages] = useState([])
   const [messageInput, setMessageInput] = useState("")
   const [isTyping, setIsTyping] = useState(false)
+  const [currentAssistantMessageContent, setCurrentAssistantMessageContent] = useState("")
   const messagesEndRef = useRef(null)
   const apiService = useRef(new APIService())
+  const typingIntervalRef = useRef(null)
 
   useEffect(() => {
-    // Initialize chat with welcome message
+
     const welcomeMessage = {
       id: Date.now(),
       role: "assistant",
@@ -25,10 +27,34 @@ const Chat = ({ onShowEmergency, onShowNotification }) => {
 
   useEffect(() => {
     scrollToBottom()
-  }, [messages, isTyping])
+  }, [messages, isTyping, currentAssistantMessageContent])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }
+
+  const typeMessage = (fullContent) => {
+    let i = 0
+    setCurrentAssistantMessageContent("")
+    typingIntervalRef.current = setInterval(() => {
+      if (i < fullContent.length) {
+        setCurrentAssistantMessageContent((prev) => prev + fullContent.charAt(i))
+        i++
+      } else {
+        clearInterval(typingIntervalRef.current)
+        setIsTyping(false)
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: Date.now() + 1,
+            role: "assistant",
+            content: fullContent,
+            timestamp: new Date(),
+          },
+        ])
+        setCurrentAssistantMessageContent("") 
+      }
+    }, 20) 
   }
 
   const sendMessage = async () => {
@@ -45,20 +71,16 @@ const Chat = ({ onShowEmergency, onShowNotification }) => {
     setMessages((prev) => [...prev, userMessage])
     setMessageInput("")
     setIsTyping(true)
+    setCurrentAssistantMessageContent("") 
 
     try {
       const result = await apiService.current.analyzeSymptoms(message)
-
-      const assistantMessage = {
-        id: Date.now() + 1,
-        role: "assistant",
-        content: formatApiResponse(result),
-        timestamp: new Date(),
-      }
-
-      setMessages((prev) => [...prev, assistantMessage])
+      const fullAssistantContent = formatApiResponse(result)
+      typeMessage(fullAssistantContent)
       onShowNotification("Analysis completed successfully!", "success")
     } catch (error) {
+      clearInterval(typingIntervalRef.current) 
+      setIsTyping(false)
       const errorMessage = {
         id: Date.now() + 1,
         role: "assistant",
@@ -67,8 +89,6 @@ const Chat = ({ onShowEmergency, onShowNotification }) => {
       }
       setMessages((prev) => [...prev, errorMessage])
       onShowNotification("Unable to connect to medical database. Please try again.", "error")
-    } finally {
-      setIsTyping(false)
     }
   }
 
@@ -90,6 +110,9 @@ const Chat = ({ onShowEmergency, onShowNotification }) => {
 
   const clearChat = () => {
     if (window.confirm("Are you sure you want to clear the chat history?")) {
+      clearInterval(typingIntervalRef.current) 
+      setIsTyping(false)
+      setCurrentAssistantMessageContent("")
       const welcomeMessage = {
         id: Date.now(),
         role: "assistant",
@@ -173,7 +196,7 @@ const Chat = ({ onShowEmergency, onShowNotification }) => {
 
   return (
     <div className="bg-white rounded-3xl shadow-xl shadow-blue-600/10 overflow-hidden h-[80vh] flex flex-col">
-      {/* Chat Header */}
+
       <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 flex justify-between items-center">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-2xl">
@@ -205,7 +228,7 @@ const Chat = ({ onShowEmergency, onShowNotification }) => {
         </div>
       </div>
 
-      {/* Messages */}
+
       <div className="flex-1 p-6 overflow-y-auto bg-slate-50">
         {messages.map((message) => (
           <div
@@ -244,9 +267,9 @@ const Chat = ({ onShowEmergency, onShowNotification }) => {
             <div className="flex-1 max-w-[70%]">
               <div className="p-4 rounded-2xl shadow-sm border bg-white text-gray-800 border-slate-200">
                 <div className="flex gap-1 items-center">
-                  <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce [animation-delay:0.2s]"></div>
-                  <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce [animation-delay:0.4s]"></div>
+                  <div className="w-2 h-2 bg-slate-400 rounded-full animate-typing"></div>
+                  <div className="w-2 h-2 bg-slate-400 rounded-full animate-typing [animation-delay:0.2s]"></div>
+                  <div className="w-2 h-2 bg-slate-400 rounded-full animate-typing [animation-delay:0.4s]"></div>
                 </div>
               </div>
             </div>
@@ -255,9 +278,8 @@ const Chat = ({ onShowEmergency, onShowNotification }) => {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area */}
-      <div className="p-6 bg-white border-t border-slate-200">
-        {/* Quick Actions */}
+  <div className="p-6 bg-white border-t border-slate-200">
+   
         <div className="flex gap-2 mb-4 flex-wrap">
           <button
             onClick={() => handleQuickAction("I have a severe headache with nausea and sensitivity to light")}
@@ -290,15 +312,14 @@ const Chat = ({ onShowEmergency, onShowNotification }) => {
             Chest Pain
           </button>
           <button
-            onClick={() => handleQuickAction("", true)}
             className="px-4 py-2 bg-red-50 hover:bg-red-100 border border-red-200 hover:border-red-600 rounded-full text-sm transition-all duration-300 hover:-translate-y-0.5 flex items-center gap-2 text-red-600"
+            onClick={() => handleQuickAction("", true)}
           >
             <i className="fas fa-exclamation-triangle text-red-600"></i>
             Emergency
           </button>
         </div>
 
-        {/* Input Group */}
         <div className="flex gap-4 items-end mb-4">
           <textarea
             value={messageInput}
@@ -317,7 +338,7 @@ const Chat = ({ onShowEmergency, onShowNotification }) => {
           </button>
         </div>
 
-        {/* Action Buttons */}
+
         <div className="flex gap-4">
           <button
             onClick={startVoiceInput}

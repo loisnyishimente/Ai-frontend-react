@@ -92,8 +92,7 @@ const SymptomsForm = ({ onAnalyze, onShowNotification }) => {
         from our database.
       </p>
 
-      <form onSubmit={handleSubmit} className="space-y-8">
-        {/* Primary Symptom Section */}
+      <form onSubmit={handleSubmit}>
         <div className="pb-8 border-b border-slate-200">
           <h3 className="text-xl font-semibold text-gray-700 mb-6">Primary Symptom</h3>
 
@@ -132,7 +131,6 @@ const SymptomsForm = ({ onAnalyze, onShowNotification }) => {
           </div>
         </div>
 
-        {/* Symptom Characteristics */}
         <div className="pb-8 border-b border-slate-200">
           <h3 className="text-xl font-semibold text-gray-700 mb-6">Symptom Characteristics</h3>
 
@@ -182,7 +180,6 @@ const SymptomsForm = ({ onAnalyze, onShowNotification }) => {
           </div>
         </div>
 
-        {/* Additional Symptoms */}
         <div className="pb-8">
           <h3 className="text-xl font-semibold text-gray-700 mb-4">Additional Symptoms</h3>
           <p className="text-slate-600 mb-4">
@@ -208,7 +205,6 @@ const SymptomsForm = ({ onAnalyze, onShowNotification }) => {
           </div>
         </div>
 
-        {/* Form Actions */}
         <div className="flex gap-4 justify-end pt-8 border-t border-slate-200">
           <button
             type="button"
