@@ -1,12 +1,12 @@
 class APIService {
   constructor() {
-    this.baseUrl = "http://104.251.216.164"
+    this.baseUrl = "http://104.251.216.164:8000"
   }
 
 
   async analyzeSymptoms(note) {
     try {
-      const response = await fetch(`${this.baseUrl}/api/analyze`, {
+      const response = await fetch(`${this.baseUrl}/analyze`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
