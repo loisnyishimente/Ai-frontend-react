@@ -1,6 +1,6 @@
 class APIService {
   constructor() {
-    this.baseUrl = "http://104.251.216.164:8000"
+    this.baseUrl = "http://104.251.216.164/api"
   }
 
 
