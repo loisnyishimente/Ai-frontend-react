@@ -6,7 +6,7 @@ class APIService {
 
   async analyzeSymptoms(note) {
     try {
-      const response = await fetch(`${this.baseUrl}/analyze`, {
+      const response = await fetch(`${this.baseUrl}/analyze/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
