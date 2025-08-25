@@ -1,4 +1,14 @@
+
+import { clsx } from "clsx"
+import { twMerge } from "tailwind-merge"
+
+// Merge Tailwind + conditional classes
+export function cn(...inputs) {
+  return twMerge(clsx(inputs))
+}
+
 export const formatTime = (date) => {
+
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
   }
   
@@ -87,3 +97,33 @@ export const formatTime = (date) => {
     "Cold intolerance",
   ]
   
+  export function getCategoryIcon(category) {
+    const icons = {
+      hematology: "🧬",
+      biochemistry: "🧪",
+      microbiology: "🦠",
+      immunology: "🛡️",
+      default: "📄",
+    };
+    return icons[category?.toLowerCase()] || icons.default;
+  }
+  
+  export function getLabStatusColor(status) {
+    const colors = {
+      pending: "yellow",
+      completed: "green",
+      abnormal: "red",
+      processing: "blue",
+    };
+    return colors[status?.toLowerCase()] || "gray";
+  }
+  
+  export function formatDate(dateStr) {
+    if (!dateStr) return "";
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  }

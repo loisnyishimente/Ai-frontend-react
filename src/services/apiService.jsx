@@ -6,7 +6,7 @@ class APIService {
 
   async analyzeSymptoms(note) {
     try {
-      const response = await fetch(`${this.baseUrl}/analyze`, {
+      const response = await fetch(`${this.baseUrl}/api/analyze/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -32,7 +32,6 @@ class APIService {
     }
   }
 
-
   async sendChatMessage(message) {
     try {
      
@@ -41,7 +40,7 @@ class APIService {
         throw new Error("No session_id found in localStorage. Run analyzeSymptoms first.")
       }
 
-      const response = await fetch(`${this.baseUrl}/chat/${sessionId}/`, {
+      const response = await fetch(`${this.baseUrl}/api/chat/${sessionId}/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

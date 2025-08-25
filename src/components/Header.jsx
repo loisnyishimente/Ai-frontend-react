@@ -21,6 +21,7 @@ const Header = ({ currentTab, onTabChange }) => {
               <i className="fas fa-comments"></i>
               Chat
             </button>
+
             <button
               className={`px-6 py-3 rounded-full transition-all duration-300 flex items-center gap-2 text-sm font-medium ${
                 currentTab === "symptoms"
@@ -31,6 +32,19 @@ const Header = ({ currentTab, onTabChange }) => {
             >
               <i className="fas fa-clipboard-list"></i>
               Symptoms
+            </button>
+
+            {/* ✅ New Lab Results Tab */}
+            <button
+              className={`px-6 py-3 rounded-full transition-all duration-300 flex items-center gap-2 text-sm font-medium ${
+                currentTab === "lab"
+                  ? "bg-white/30 shadow-lg shadow-blue-600/30"
+                  : "bg-white/10 hover:bg-white/20 hover:-translate-y-0.5"
+              }`}
+              onClick={() => onTabChange("lab")}
+            >
+              <i className="fas fa-vials"></i>
+              Lab Results
             </button>
           </nav>
 

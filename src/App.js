@@ -5,11 +5,13 @@ import Header from "./components/Header"
 import Chat from "./components/Chat"
 import SymptomsForm from "./components/SymptomsForm"
 import AIAnalysisPanel from "./components/AIAnalysisPanel"
+import LabResults from "./components/LabResult"
 import { EmergencyModal } from "./components/Modal"
 import LoadingOverlay from "./components/LoadingOverlay"
 import Notification from "./components/Notification"
 import APIService from "./services/apiService"
 import './App.css'
+
 function App() {
   const [currentTab, setCurrentTab] = useState("chat")
   const [isEmergencyModalOpen, setIsEmergencyModalOpen] = useState(false)
@@ -66,7 +68,10 @@ function App() {
         text: "Unable to connect to medical database",
       })
       console.error("Analysis error:", error)
-      showNotification("Unable to connect to medical database. Please check your connection and try again.", "error")
+      showNotification(
+        "Unable to connect to medical database. Please check your connection and try again.",
+        "error"
+      )
     } finally {
       setIsLoading(false)
     }
@@ -80,21 +85,39 @@ function App() {
         <div className="max-w-7xl mx-auto px-5">
           {/* Chat Tab */}
           <div className={`${currentTab === "chat" ? "block animate-fade-in" : "hidden"}`}>
-            <Chat onShowEmergency={() => setIsEmergencyModalOpen(true)} onShowNotification={showNotification} />
+            <Chat
+              onShowEmergency={() => setIsEmergencyModalOpen(true)}
+              onShowNotification={showNotification}
+            />
           </div>
 
           {/* Symptoms Tab */}
           <div className={`${currentTab === "symptoms" ? "block animate-fade-in" : "hidden"}`}>
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-8 max-w-7xl mx-auto">
-              <SymptomsForm onAnalyze={handleSymptomAnalysis} onShowNotification={showNotification} />
-              <AIAnalysisPanel status={aiStatus.status} statusText={aiStatus.text} analysisResult={analysisResult} />
+              <SymptomsForm
+                onAnalyze={handleSymptomAnalysis}
+                onShowNotification={showNotification}
+              />
+              <AIAnalysisPanel
+                status={aiStatus.status}
+                statusText={aiStatus.text}
+                analysisResult={analysisResult}
+              />
             </div>
+          </div>
+
+          {/* ✅ Lab Results Tab */}
+          <div className={`${currentTab === "lab" ? "block animate-fade-in" : "hidden"}`}>
+            <LabResults onShowNotification={showNotification} />
           </div>
         </div>
       </main>
 
       {/* Modals and Overlays */}
-      <EmergencyModal isOpen={isEmergencyModalOpen} onClose={() => setIsEmergencyModalOpen(false)} />
+      <EmergencyModal
+        isOpen={isEmergencyModalOpen}
+        onClose={() => setIsEmergencyModalOpen(false)}
+      />
 
       <LoadingOverlay isVisible={isLoading} />
 
