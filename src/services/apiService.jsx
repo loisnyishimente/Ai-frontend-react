@@ -44,7 +44,7 @@ class APIService {
         throw new Error("No session_id found in localStorage. Run analyzeSymptoms first.")
       }
 
-      const response = await fetch(`${this.baseUrl}/api/chat/${sessionId}/`, {
+      const response = await fetch(`${this.baseUrl}/chat/${sessionId}/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
