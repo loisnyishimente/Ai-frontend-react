@@ -13,14 +13,12 @@ export const formatTime = (date) => {
   }
   
   export const formatApiResponse = (result) => {
-    let response = `🔬 **Medical Analysis Complete**\n\n`
+    let response = `Medical Analysis Complete\n\n`
   
-    if (result.session_id) {
-      response += `📋 **Session ID:** ${result.session_id}\n\n`
-    }
+  
   
     if (result.possible_diagnoses && result.possible_diagnoses.length > 0) {
-      response += `🩺 **Possible Diagnoses:**\n`
+      response += `Possible Diagnoses:\n`
       result.possible_diagnoses.forEach((diagnosis, index) => {
         response += `${index + 1}. ${diagnosis}\n`
       })
@@ -28,18 +26,18 @@ export const formatTime = (date) => {
     }
   
     if (result.explanation) {
-      response += `📖 **Medical Explanation:**\n${result.explanation}\n\n`
+      response += `📖 Medical Explanation:\n${result.explanation}\n\n`
     }
   
     if (result.exam_name) {
-      response += `🔍 **Recommended Examination:** ${result.exam_name}\n`
+      response += `🔍  Recommended Examination: ${result.exam_name}\n`
     }
   
     if (result.exam_type) {
-      response += `📊 **Examination Type:** ${result.exam_type}\n\n`
+      response += `📊 Examination Type: ${result.exam_type}\n\n`
     }
   
-    response += `⚠️ **Important Medical Disclaimer:**\nThis AI analysis is based on medical databases and provides general information only. It cannot replace professional medical advice, diagnosis, or treatment. If your symptoms are severe, persistent, or concerning, please consult with a qualified healthcare professional immediately. In case of emergency, call 911.`
+    response += `⚠️ Important Medical Disclaimer:\nThis AI analysis is based on medical databases and provides general information only. It cannot replace professional medical advice, diagnosis, or treatment. If your symptoms are severe, persistent, or concerning, please consult with a qualified healthcare professional immediately. In case of emergency, call 911.`
   
     return response
   }

@@ -8,13 +8,13 @@ const Chat = ({ onShowEmergency, onShowNotification }) => {
   const [messages, setMessages] = useState([])
   const [messageInput, setMessageInput] = useState("")
   const [isTyping, setIsTyping] = useState(false)
+  const [isThinking, setIsThinking] = useState(false)
   const [currentAssistantMessageContent, setCurrentAssistantMessageContent] = useState("")
   const messagesEndRef = useRef(null)
   const apiService = useRef(new APIService())
   const typingIntervalRef = useRef(null)
 
   useEffect(() => {
-
     const welcomeMessage = {
       id: Date.now(),
       role: "assistant",
@@ -36,6 +36,9 @@ const Chat = ({ onShowEmergency, onShowNotification }) => {
   const typeMessage = (fullContent) => {
     let i = 0
     setCurrentAssistantMessageContent("")
+    setIsThinking(false)
+    setIsTyping(true)
+
     typingIntervalRef.current = setInterval(() => {
       if (i < fullContent.length) {
         setCurrentAssistantMessageContent((prev) => prev + fullContent.charAt(i))
@@ -52,14 +55,14 @@ const Chat = ({ onShowEmergency, onShowNotification }) => {
             timestamp: new Date(),
           },
         ])
-        setCurrentAssistantMessageContent("") 
+        setCurrentAssistantMessageContent("")
       }
-    }, 20) 
+    }, 30)
   }
 
   const sendMessage = async () => {
     const message = messageInput.trim()
-    if (!message || isTyping) return
+    if (!message || isTyping || isThinking) return
 
     const userMessage = {
       id: Date.now(),
@@ -70,16 +73,19 @@ const Chat = ({ onShowEmergency, onShowNotification }) => {
 
     setMessages((prev) => [...prev, userMessage])
     setMessageInput("")
-    setIsTyping(true)
-    setCurrentAssistantMessageContent("") 
+    setIsThinking(true)
+    setCurrentAssistantMessageContent("")
 
     try {
+      await new Promise((resolve) => setTimeout(resolve, 1000 + Math.random() * 2000))
+
       const result = await apiService.current.analyzeSymptoms(message)
       const fullAssistantContent = formatApiResponse(result)
       typeMessage(fullAssistantContent)
       onShowNotification("Analysis completed successfully!", "success")
     } catch (error) {
-      clearInterval(typingIntervalRef.current) 
+      clearInterval(typingIntervalRef.current)
+      setIsThinking(false)
       setIsTyping(false)
       const errorMessage = {
         id: Date.now() + 1,
@@ -110,8 +116,9 @@ const Chat = ({ onShowEmergency, onShowNotification }) => {
 
   const clearChat = () => {
     if (window.confirm("Are you sure you want to clear the chat history?")) {
-      clearInterval(typingIntervalRef.current) 
+      clearInterval(typingIntervalRef.current)
       setIsTyping(false)
+      setIsThinking(false)
       setCurrentAssistantMessageContent("")
       const welcomeMessage = {
         id: Date.now(),
@@ -196,7 +203,7 @@ const Chat = ({ onShowEmergency, onShowNotification }) => {
 
   return (
     <div className="bg-white rounded-3xl shadow-xl shadow-blue-600/10 overflow-hidden h-[80vh] flex flex-col">
-
+      {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 flex justify-between items-center">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-2xl">
@@ -228,7 +235,7 @@ const Chat = ({ onShowEmergency, onShowNotification }) => {
         </div>
       </div>
 
-
+      {/* Chat body */}
       <div className="flex-1 p-6 overflow-y-auto bg-slate-50">
         {messages.map((message) => (
           <div
@@ -259,6 +266,28 @@ const Chat = ({ onShowEmergency, onShowNotification }) => {
           </div>
         ))}
 
+        {/* Thinking */}
+        {isThinking && (
+          <div className="flex mb-6">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 mr-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+              <i className="fas fa-brain animate-pulse"></i>
+            </div>
+            <div className="flex-1 max-w-[70%]">
+              <div className="p-4 rounded-2xl shadow-sm border bg-gradient-to-r from-blue-50 to-indigo-50 text-gray-800 border-blue-200">
+                <div className="flex items-center gap-3">
+                  <div className="flex gap-1">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:0.1s]"></div>
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:0.2s]"></div>
+                  </div>
+                  <span className="text-sm text-blue-700 font-medium">Analyzing your symptoms...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Typing */}
         {isTyping && (
           <div className="flex mb-6">
             <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 mr-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white">
@@ -266,10 +295,9 @@ const Chat = ({ onShowEmergency, onShowNotification }) => {
             </div>
             <div className="flex-1 max-w-[70%]">
               <div className="p-4 rounded-2xl shadow-sm border bg-white text-gray-800 border-slate-200">
-                <div className="flex gap-1 items-center">
-                  <div className="w-2 h-2 bg-slate-400 rounded-full animate-typing"></div>
-                  <div className="w-2 h-2 bg-slate-400 rounded-full animate-typing [animation-delay:0.2s]"></div>
-                  <div className="w-2 h-2 bg-slate-400 rounded-full animate-typing [animation-delay:0.4s]"></div>
+                <div className="whitespace-pre-wrap">
+                  {currentAssistantMessageContent}
+                  <span className="inline-block w-2 h-5 bg-blue-600 ml-1 animate-pulse"></span>
                 </div>
               </div>
             </div>
@@ -278,8 +306,9 @@ const Chat = ({ onShowEmergency, onShowNotification }) => {
         <div ref={messagesEndRef} />
       </div>
 
-  <div className="p-6 bg-white border-t border-slate-200">
-   
+      {/* Footer */}
+      <div className="p-6 bg-white border-t border-slate-200">
+        {/* Quick actions */}
         <div className="flex gap-2 mb-4 flex-wrap">
           <button
             onClick={() => handleQuickAction("I have a severe headache with nausea and sensitivity to light")}
@@ -320,6 +349,7 @@ const Chat = ({ onShowEmergency, onShowNotification }) => {
           </button>
         </div>
 
+        {/* Input area */}
         <div className="flex gap-4 items-end mb-4">
           <textarea
             value={messageInput}
@@ -331,14 +361,14 @@ const Chat = ({ onShowEmergency, onShowNotification }) => {
           />
           <button
             onClick={sendMessage}
-            disabled={!messageInput.trim() || isTyping}
+            disabled={!messageInput.trim() || isTyping || isThinking}
             className="w-12 h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:scale-110 hover:shadow-lg hover:shadow-blue-600/40 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-white rounded-full flex items-center justify-center transition-all duration-300"
           >
-            <i className="fas fa-paper-plane"></i>
+            <i className={`fas fa-${isThinking ? "brain" : isTyping ? "hourglass-half" : "paper-plane"}`}></i>
           </button>
         </div>
 
-
+        {/* Extra controls */}
         <div className="flex gap-4">
           <button
             onClick={startVoiceInput}
