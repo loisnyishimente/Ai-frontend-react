@@ -308,46 +308,7 @@ const Chat = ({ onShowEmergency, onShowNotification }) => {
 
       {/* Footer */}
       <div className="p-6 bg-white border-t border-slate-200">
-        {/* Quick actions */}
-        <div className="flex gap-2 mb-4 flex-wrap">
-          <button
-            onClick={() => handleQuickAction("I have a severe headache with nausea and sensitivity to light")}
-            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-full text-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-blue-600 flex items-center gap-2"
-          >
-            <i className="fas fa-head-side-cough text-blue-600"></i>
-            Headache
-          </button>
-          <button
-            onClick={() =>
-              handleQuickAction("I'm experiencing extreme fatigue, memory problems, and difficulty concentrating")
-            }
-            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-full text-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-blue-600 flex items-center gap-2"
-          >
-            <i className="fas fa-bed text-blue-600"></i>
-            Fatigue & Memory
-          </button>
-          <button
-            onClick={() => handleQuickAction("I have a high fever with chills, body aches, and weakness")}
-            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-full text-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-blue-600 flex items-center gap-2"
-          >
-            <i className="fas fa-thermometer-half text-blue-600"></i>
-            Fever
-          </button>
-          <button
-            onClick={() => handleQuickAction("I have chest pain, shortness of breath, and dizziness")}
-            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-full text-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-blue-600 flex items-center gap-2"
-          >
-            <i className="fas fa-heart text-blue-600"></i>
-            Chest Pain
-          </button>
-          <button
-            className="px-4 py-2 bg-red-50 hover:bg-red-100 border border-red-200 hover:border-red-600 rounded-full text-sm transition-all duration-300 hover:-translate-y-0.5 flex items-center gap-2 text-red-600"
-            onClick={() => handleQuickAction("", true)}
-          >
-            <i className="fas fa-exclamation-triangle text-red-600"></i>
-            Emergency
-          </button>
-        </div>
+    
 
         {/* Input area */}
         <div className="flex gap-4 items-end mb-4">
