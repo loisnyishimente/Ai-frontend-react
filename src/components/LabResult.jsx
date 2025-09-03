@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react"
 import { Card } from "../components/ui/card"
-import { Badge } from "../components/ui/badge"
 import { Button } from "../components/ui/button"
 import APIService from "../services/apiService"
 import { getCategoryIcon } from "../utils/helpers"
@@ -15,15 +14,7 @@ import {
   Send,
   MessageCircle,
   Activity,
-  Clock,
-  ChevronDown,
-  ChevronUp,
-  Heart,
-  Zap,
-  Shield,
   Search,
-  Download,
-  Filter,
 } from "lucide-react"
 
 const LabResults = ({ onResultsChange }) => {
@@ -32,108 +23,50 @@ const LabResults = ({ onResultsChange }) => {
   const [chatHistory, setChatHistory] = useState([])
   const [labResults, setLabResults] = useState([])
   const [isLoading, setIsLoading] = useState(false)
-  const [showAllResults, setShowAllResults] = useState(false)
-  const [expandedCategories, setExpandedCategories] = useState(new Set())
-  const [filterStatus, setFilterStatus] = useState("all")
+  const [typingReply, setTypingReply] = useState("")
 
   useEffect(() => {
     if (onResultsChange) onResultsChange(labResults)
   }, [labResults, onResultsChange])
 
-  const groupResultsByCategory = (results) =>
-    results.reduce((groups, result) => {
-      const category = result.category || "other"
-      if (!groups[category]) groups[category] = []
-      groups[category].push(result)
-      return groups
-    }, {})
-
-  const getCriticalResults = () => labResults.filter((r) => ["critical", "high", "low"].includes(r.status))
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case "normal":
-        return <CheckCircle className="h-5 w-5 text-emerald-500" />
-      case "high":
-        return <TrendingUp className="h-5 w-5 text-amber-500" />
-      case "low":
-        return <TrendingDown className="h-5 w-5 text-blue-500" />
-      case "critical":
-        return <AlertCircle className="h-5 w-5 text-red-500" />
-      default:
-        return <FileText className="h-5 w-5 text-slate-400" />
-    }
-  }
-
-  const getStatusBadgeVariant = (status) => {
-    switch (status) {
-      case "normal":
-        return "default"
-      case "high":
-        return "secondary"
-      case "low":
-        return "outline"
-      case "critical":
-        return "destructive"
-      default:
-        return "outline"
-    }
-  }
-
-  const getCategoryIconEnhanced = (category) => {
-    switch (category.toLowerCase()) {
-      case "cardiovascular":
-      case "cardiac":
-        return <Heart className="h-5 w-5 text-red-500" />
-      case "metabolic":
-      case "diabetes":
-        return <Zap className="h-5 w-5 text-yellow-500" />
-      case "immune":
-      case "immunity":
-        return <Shield className="h-5 w-5 text-blue-500" />
-      default:
-        return getCategoryIcon ? getCategoryIcon(category) : <Activity className="h-5 w-5 text-slate-500" />
-    }
-  }
-
-  const toggleCategory = (category) => {
-    const newExpanded = new Set(expandedCategories)
-    if (newExpanded.has(category)) {
-      newExpanded.delete(category)
-    } else {
-      newExpanded.add(category)
-    }
-    setExpandedCategories(newExpanded)
-  }
-
   const handleSendMessage = async () => {
     if (!userMessage.trim()) return
 
     setIsLoading(true)
-    try {
-      const response = await apiService.current.sendChatMessage(userMessage)
+    const messageToSend = userMessage
+    setChatHistory((prev) => [...prev, { message: messageToSend, reply: "" }])
+    setUserMessage("")
 
-      setChatHistory((prev) => [...prev, { message: userMessage, reply: response.reply }])
+    try {
+      const response = await apiService.current.sendChatMessage(messageToSend)
 
       if (response.lab_results) {
         setLabResults(response.lab_results)
       }
 
-      setUserMessage("")
+      // Typing effect
+      let i = 0
+      const text = response.reply || "No response"
+      setTypingReply("")
+      const interval = setInterval(() => {
+        setTypingReply((prev) => prev + text.charAt(i))
+        i++
+        if (i >= text.length) {
+          clearInterval(interval)
+          setChatHistory((prev) => {
+            const updated = [...prev]
+            updated[updated.length - 1].reply = text
+            return updated
+          })
+          setTypingReply("")
+        }
+      }, 40) // speed (ms per character)
     } catch (error) {
       console.error("Error sending message:", error)
     } finally {
       setIsLoading(false)
     }
   }
-
-  const getFilteredResults = () => {
-    if (filterStatus === "all") return labResults
-    return labResults.filter((result) => result.status === filterStatus)
-  }
-
-  const groupedResults = groupResultsByCategory(getFilteredResults())
-  const criticalResults = getCriticalResults()
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-4 md:p-6">
@@ -160,7 +93,11 @@ const LabResults = ({ onResultsChange }) => {
                   </div>
                   <div className="flex justify-start">
                     <div className="bg-white border border-slate-200 px-4 py-3 rounded-2xl rounded-bl-md max-w-md shadow-sm">
-                      <p className="text-sm text-slate-700">{chat.reply}</p>
+                      <p className="text-sm text-slate-700">
+                        {index === chatHistory.length - 1 && typingReply
+                          ? typingReply
+                          : chat.reply}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -175,7 +112,7 @@ const LabResults = ({ onResultsChange }) => {
                 type="text"
                 value={userMessage}
                 onChange={(e) => setUserMessage(e.target.value)}
-                placeholder="Ask about your lab results, symptoms, or health concerns..."
+                placeholder="Ask about your lab results, "
                 className="w-full pl-12 pr-4 py-4 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white shadow-sm text-slate-900 placeholder-slate-500"
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleSendMessage()
@@ -195,7 +132,6 @@ const LabResults = ({ onResultsChange }) => {
               )}
             </Button>
           </div>
-
         </Card>
       </div>
     </div>

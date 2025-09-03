@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import APIService from "../services/apiService"
 import { formatTime, formatApiResponse } from "../utils/helpers"
 
-const Chat = ({ onShowEmergency, onShowNotification }) => {
+const Chat = ({ onShowEmergency = () => {}, onShowNotification = () => {} }) => {
   const [messages, setMessages] = useState([])
   const [messageInput, setMessageInput] = useState("")
   const [isTyping, setIsTyping] = useState(false)
@@ -14,6 +14,7 @@ const Chat = ({ onShowEmergency, onShowNotification }) => {
   const apiService = useRef(new APIService())
   const typingIntervalRef = useRef(null)
 
+  // Welcome on first mount (will be replaced if query params present)
   useEffect(() => {
     const welcomeMessage = {
       id: Date.now(),
@@ -60,8 +61,8 @@ const Chat = ({ onShowEmergency, onShowNotification }) => {
     }, 30)
   }
 
-  const sendMessage = async () => {
-    const message = messageInput.trim()
+  const sendMessage = async (overrideMessage) => {
+    const message = (overrideMessage ?? messageInput).trim()
     if (!message || isTyping || isThinking) return
 
     const userMessage = {
@@ -72,13 +73,12 @@ const Chat = ({ onShowEmergency, onShowNotification }) => {
     }
 
     setMessages((prev) => [...prev, userMessage])
-    setMessageInput("")
+    if (!overrideMessage) setMessageInput("")
     setIsThinking(true)
     setCurrentAssistantMessageContent("")
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000 + Math.random() * 2000))
-
+      // Call your AI
       const result = await apiService.current.analyzeSymptoms(message)
       const fullAssistantContent = formatApiResponse(result)
       typeMessage(fullAssistantContent)
@@ -201,6 +201,46 @@ const Chat = ({ onShowEmergency, onShowNotification }) => {
     input.click()
   }
 
+  // 🔹 NEW: auto-start from query params
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const patientId = params.get("patientId")
+    const symptoms = params.get("symptoms")
+
+    if (symptoms && symptoms.trim().length > 0) {
+      // Replace welcome with initial “user” message
+      setMessages([
+        {
+          id: Date.now(),
+          role: "user",
+          content: symptoms,
+          timestamp: new Date(),
+        },
+      ])
+
+      // Trigger AI immediately (optionally pass patientId to backend)
+      const run = async () => {
+        setIsThinking(true)
+        try {
+          const result = await apiService.current.analyzeSymptoms(symptoms, patientId) // patientId optional
+          const fullAssistantContent = formatApiResponse(result)
+          typeMessage(fullAssistantContent)
+          onShowNotification("Initial analysis completed successfully!", "success")
+        } catch (error) {
+          setIsThinking(false)
+          const errorMessage = {
+            id: Date.now() + 1,
+            role: "assistant",
+            content: `Unable to analyze initial symptoms. Error: ${error.message}`,
+            timestamp: new Date(),
+          }
+          setMessages((prev) => [...prev, errorMessage])
+        }
+      }
+      run()
+    }
+  }, []) // run once on mount
+
   return (
     <div className="bg-white rounded-3xl shadow-xl shadow-blue-600/10 overflow-hidden h-[80vh] flex flex-col">
       {/* Header */}
@@ -266,7 +306,6 @@ const Chat = ({ onShowEmergency, onShowNotification }) => {
           </div>
         ))}
 
-        {/* Thinking */}
         {isThinking && (
           <div className="flex mb-6">
             <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 mr-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white">
@@ -306,11 +345,8 @@ const Chat = ({ onShowEmergency, onShowNotification }) => {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Footer */}
+      {/* Composer */}
       <div className="p-6 bg-white border-t border-slate-200">
-    
-
-        {/* Input area */}
         <div className="flex gap-4 items-end mb-4">
           <textarea
             value={messageInput}
@@ -321,7 +357,7 @@ const Chat = ({ onShowEmergency, onShowNotification }) => {
             rows="1"
           />
           <button
-            onClick={sendMessage}
+            onClick={() => sendMessage()}
             disabled={!messageInput.trim() || isTyping || isThinking}
             className="w-12 h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:scale-110 hover:shadow-lg hover:shadow-blue-600/40 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-white rounded-full flex items-center justify-center transition-all duration-300"
           >
@@ -329,7 +365,6 @@ const Chat = ({ onShowEmergency, onShowNotification }) => {
           </button>
         </div>
 
-        {/* Extra controls */}
         <div className="flex gap-4">
           <button
             onClick={startVoiceInput}
