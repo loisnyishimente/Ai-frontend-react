@@ -4,16 +4,12 @@ import { useState, useEffect, useRef } from "react"
 import { Card } from "../components/ui/card"
 import { Button } from "../components/ui/button"
 import APIService from "../services/apiService"
-import { getCategoryIcon } from "../utils/helpers"
+
 import {
-  FileText,
-  TrendingUp,
-  TrendingDown,
-  AlertCircle,
-  CheckCircle,
+ 
   Send,
   MessageCircle,
-  Activity,
+
   Search,
 } from "lucide-react"
 
