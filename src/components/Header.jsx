@@ -47,11 +47,6 @@ const Header = ({ currentTab, onTabChange }) => {
               Lab Results
             </button>
           </nav>
-
-          <div className="flex items-center gap-4 bg-white/10 rounded-full px-4 py-2 text-sm">
-            <i className="fas fa-stethoscope"></i>
-            <span>AI Medical Assistant</span>
-          </div>
         </div>
       </div>
     </header>
