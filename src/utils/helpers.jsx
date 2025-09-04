@@ -126,7 +126,7 @@ export const formatTime = (date) => {
     });
   }
   
-  const formatSymptomsForAI = (rawSymptoms) => {
+  export const formatSymptomsForAI = (rawSymptoms) => {
     if (!rawSymptoms) return ""
     // Split by comma or semicolon
     const symptomsArray = rawSymptoms

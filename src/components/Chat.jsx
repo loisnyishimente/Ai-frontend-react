@@ -2,7 +2,9 @@
 
 import { useState, useEffect, useRef } from "react"
 import APIService from "../services/apiService"
-import { formatTime, formatApiResponse } from "../utils/helpers"
+import { formatTime, formatApiResponse} from "../utils/helpers"
+import { formatSymptomsForAI } from "../utils/helpers"
+
 
 const Chat = ({ onShowEmergency = () => {}, onShowNotification = () => {} }) => {
   const [messages, setMessages] = useState([])
@@ -200,7 +202,7 @@ const Chat = ({ onShowEmergency = () => {}, onShowNotification = () => {} }) => 
 
     input.click()
   }
-  
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const rawSymptoms = params.get("symptoms")
