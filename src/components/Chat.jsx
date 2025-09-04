@@ -200,32 +200,31 @@ const Chat = ({ onShowEmergency = () => {}, onShowNotification = () => {} }) => 
 
     input.click()
   }
-
-  // 🔹 NEW: auto-start from query params
+  
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
-    const patientId = params.get("patientId")
-    const symptoms = params.get("symptoms")
-
-    if (symptoms && symptoms.trim().length > 0) {
-      // Replace welcome with initial “user” message
+    const rawSymptoms = params.get("symptoms")
+  
+    if (rawSymptoms && rawSymptoms.trim().length > 0) {
+      const detailedSymptoms = formatSymptomsForAI(rawSymptoms)
+  
+      // Replace welcome with user message
       setMessages([
         {
           id: Date.now(),
           role: "user",
-          content: symptoms,
+          content: detailedSymptoms,
           timestamp: new Date(),
         },
       ])
-
-      // Trigger AI immediately (optionally pass patientId to backend)
+  
+      // Trigger AI
       const run = async () => {
         setIsThinking(true)
         try {
-          const result = await apiService.current.analyzeSymptoms(symptoms, patientId) // patientId optional
+          const result = await apiService.current.analyzeSymptoms(detailedSymptoms)
           const fullAssistantContent = formatApiResponse(result)
           typeMessage(fullAssistantContent)
-          onShowNotification("Initial analysis completed successfully!", "success")
         } catch (error) {
           setIsThinking(false)
           const errorMessage = {
@@ -237,9 +236,11 @@ const Chat = ({ onShowEmergency = () => {}, onShowNotification = () => {} }) => 
           setMessages((prev) => [...prev, errorMessage])
         }
       }
+  
       run()
     }
-  }, []) // run once on mount
+  }, [])
+  
 
   return (
     <div className="bg-white rounded-3xl shadow-xl shadow-blue-600/10 overflow-hidden h-[80vh] flex flex-col">

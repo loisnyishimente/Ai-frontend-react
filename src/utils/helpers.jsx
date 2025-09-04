@@ -126,3 +126,19 @@ export const formatTime = (date) => {
     });
   }
   
+  const formatSymptomsForAI = (rawSymptoms) => {
+    if (!rawSymptoms) return ""
+    // Split by comma or semicolon
+    const symptomsArray = rawSymptoms
+      .split(/[,;]+/)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0)
+  
+    if (symptomsArray.length === 0) return ""
+  
+    // Join into a readable sentence
+    return `Patient reports the following symptoms: ${symptomsArray.join(
+      ", "
+    )}. Please analyze and provide a medical explanation.`
+  }
+  
